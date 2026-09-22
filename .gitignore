@@ -14,10 +14,10 @@ __pycache__/
 .env.*
 !.env.example
 
-# Entrada y salida
+# Salidas
 output/
-examples/*
-!examples/.gitkeep
+
+# Nunca subir material de trabajo. Los ejemplos en texto sí se versionan.
 *.pdf
 *.docx
 
