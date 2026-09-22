@@ -1,0 +1,25 @@
+# Entornos
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Entrada y salida
+output/
+examples/*
+!examples/.gitkeep
+*.pdf
+*.docx
+
+# macOS
+.DS_Store
