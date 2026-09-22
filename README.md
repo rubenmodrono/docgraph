@@ -58,6 +58,7 @@ Las cuatro decisiones no obvias están documentadas como ADR:
 - [ADR-0002 — Presupuesto de tokens explícito](docs/adr/0002-presupuesto-de-tokens.md)
 - [ADR-0003 — Extracción estructurada frente a heurísticas](docs/adr/0003-extraccion-estructurada.md)
 - [ADR-0004 — Abstracción de proveedor LLM](docs/adr/0004-abstraccion-de-proveedor.md)
+- [ADR-0005 — Exponer el grafo como servidor MCP](docs/adr/0005-servidor-mcp.md)
 
 Vista de contenedores y contexto en [docs/architecture.md](docs/architecture.md).
 
@@ -98,10 +99,50 @@ vacíos. Sirve para validar el cableado sin gastar cuota.
 Salidas en `--output-dir`: `analisis.md`, `analisis.html` y, si hay
 componentes, `diagrama.mmd`.
 
+## Servidor MCP
+
+El mismo grafo se expone como servidor [Model Context Protocol](https://modelcontextprotocol.io),
+para invocarlo desde cualquier cliente MCP sin pasar por la terminal.
+
+```bash
+pip install -e ".[gemini,mcp]"
+docgraph-mcp          # transporte stdio
+```
+
+Dos herramientas, ambas con salida estructurada:
+
+| Herramienta | Para qué |
+| --- | --- |
+| `analyse_text(text, filename)` | Documentación que el cliente ya tiene en contexto |
+| `analyse_directory(input_dir)` | Documentos en disco |
+
+Devuelven `title`, `summary`, `components`, `relations`, `risks`,
+`key_decisions`, `diagram` (Mermaid) y `warnings`.
+
+Para registrarlo en un cliente compatible:
+
+```json
+{
+  "mcpServers": {
+    "docgraph": {
+      "command": "docgraph-mcp",
+      "env": { "GEMINI_API_KEY": "tu-clave" }
+    }
+  }
+}
+```
+
 ## Tests
 
 ```bash
 pytest
+```
+
+Y una comprobación del transporte que arranca el servidor de verdad y hace
+un handshake JSON-RPC completo:
+
+```bash
+python tests/manual_mcp_handshake.py
 ```
 
 La cobertura se concentra en el troceado, que es la garantía de que un

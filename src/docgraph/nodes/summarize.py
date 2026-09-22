@@ -53,6 +53,13 @@ def needs_map_reduce(state: DocGraphState) -> str:
 
 def summarize_direct(state: DocGraphState, provider: LLMProvider) -> DocGraphState:
     chunks: list[Chunk] = state.get("chunks", [])
+    if not chunks:
+        # Sin esta guarda el grafo llamaría al modelo con un prompt vacío:
+        # gasto facturable por analizar nada. La incidencia ya la reportó
+        # el nodo de ingesta, así que aquí basta con no continuar.
+        logger.warning("No hay fragmentos que resumir; se omite la llamada al modelo")
+        return {"summary": ""}
+
     text = "\n\n".join(c.text for c in chunks)
 
     try:
