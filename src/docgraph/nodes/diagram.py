@@ -33,10 +33,29 @@ def _escape(text: str) -> str:
     return text.replace('"', "'").replace("\n", " ").strip()
 
 
+def _truncate(text: str, limit: int) -> str:
+    """Recorta por frontera de palabra.
+
+    Cortar por número de caracteres produce etiquetas como "finalización de
+    operacio", que en un diagrama leen como un error de datos y no como una
+    abreviatura.
+    """
+    if len(text) <= limit:
+        return text
+
+    clipped = text[: limit - 1]
+    spaced = clipped.rsplit(" ", 1)[0]
+    # Si la primera palabra ya excede el límite no hay frontera que respetar.
+    return f"{spaced or clipped}…"
+
+
+def _label(text: str, limit: int) -> str:
+    return _truncate(_escape(text), limit)
+
+
 def _render_node(component: Component) -> str:
     open_d, close_d = _SHAPES[component.kind]
-    label = _escape(component.name)[:60]
-    return f'    {component.node_id()}{open_d}"{label}"{close_d}'
+    return f'    {component.node_id()}{open_d}"{_label(component.name, 60)}"{close_d}'
 
 
 def build_mermaid(structure: DocumentStructure) -> str:
@@ -50,7 +69,7 @@ def build_mermaid(structure: DocumentStructure) -> str:
     for relation in structure.resolved_relations():
         source = by_name[relation.source].node_id()
         target = by_name[relation.target].node_id()
-        label = _escape(relation.label)[:40]
+        label = _label(relation.label, 40)
         arrow = f'-- "{label}" -->' if label else "-->"
         lines.append(f"    {source} {arrow} {target}")
 

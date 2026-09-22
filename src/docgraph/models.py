@@ -7,6 +7,7 @@ relaciones reales en vez de a partir de la forma del texto.
 
 from __future__ import annotations
 
+import unicodedata
 from enum import StrEnum
 from pathlib import Path
 
@@ -39,8 +40,16 @@ class Component(BaseModel):
     )
 
     def node_id(self) -> str:
-        """Identificador seguro para Mermaid."""
-        cleaned = "".join(c if c.isalnum() else "_" for c in self.name)
+        """Identificador ASCII seguro para Mermaid.
+
+        `str.isalnum()` acepta caracteres acentuados, así que filtrar solo por
+        él deja IDs como `c_liquidación`. Algunos renderizadores de Mermaid no
+        los admiten, de modo que primero se descompone el texto y se descartan
+        las marcas diacríticas.
+        """
+        decomposed = unicodedata.normalize("NFKD", self.name)
+        ascii_only = decomposed.encode("ascii", "ignore").decode("ascii")
+        cleaned = "".join(c if c.isalnum() else "_" for c in ascii_only)
         return f"c_{cleaned.lower()}"[:48]
 
 

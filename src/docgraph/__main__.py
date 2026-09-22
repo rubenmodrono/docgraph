@@ -10,6 +10,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from docgraph.graph import analyse
+from docgraph.llm.provider import LLMError
 
 
 def _configure_logging(verbose: bool) -> None:
@@ -37,7 +38,12 @@ def main(argv: list[str] | None = None) -> int:
     load_dotenv()
     _configure_logging(args.verbose)
 
-    result = analyse(args.input_dir, args.output_dir)
+    try:
+        result = analyse(args.input_dir, args.output_dir)
+    except LLMError as exc:
+        # Fallo de configuración, no un bug: un traceback aquí solo estorba.
+        print(f"Error de configuración: {exc}", file=sys.stderr)
+        return 2
 
     outputs = result.get("outputs", {})
     if not outputs:

@@ -75,14 +75,25 @@ que no existe.
 ## Uso
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[gemini,dev]"
 cp .env.example .env    # añade GEMINI_API_KEY
 docgraph --input-dir ./examples --output-dir ./output
 ```
 
+El SDK de Gemini es un **extra opcional**: el núcleo solo conoce el protocolo
+`LLMProvider`. Si defines `GEMINI_API_KEY` sin haber instalado el extra, la
+herramienta te lo dice y sale con código 2, en lugar de reventar con un
+`ImportError`.
+
 Sin `GEMINI_API_KEY` el grafo se ejecuta igualmente en **modo offline**: se
 recorre entero y se generan las salidas, pero el resumen y la estructura van
 vacíos. Sirve para validar el cableado sin gastar cuota.
+
+> **macOS Intel:** `cryptography` dejó de publicar wheels para `x86_64` a
+> partir de la versión 49, y `google-genai` la arrastra vía `google-auth`.
+> Sin wheel, `pip` intenta compilar la extensión de Rust y falla. Instala con
+> `pip install -e ".[gemini,dev]" "cryptography<49"`. En Apple Silicon y Linux
+> no hace falta.
 
 Salidas en `--output-dir`: `analisis.md`, `analisis.html` y, si hay
 componentes, `diagrama.mmd`.

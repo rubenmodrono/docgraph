@@ -44,7 +44,16 @@ class GeminiProvider:
     name = "gemini"
 
     def __init__(self, api_key: str | None = None, model: str = "gemini-2.5-flash"):
-        from google import genai  # import perezoso: el SDK es opcional
+        # Import perezoso: el SDK es un extra opcional, así que su ausencia es
+        # un estado esperado y merece un mensaje accionable, no un ImportError
+        # crudo a mitad de la construcción del grafo.
+        try:
+            from google import genai
+        except ImportError as exc:
+            raise LLMError(
+                "GEMINI_API_KEY está definida pero el SDK google-genai no está "
+                'instalado. Instálalo con: pip install "docgraph[gemini]"'
+            ) from exc
 
         key = api_key or os.getenv("GEMINI_API_KEY")
         if not key:
